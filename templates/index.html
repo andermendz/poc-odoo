@@ -1,30 +1,83 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Odoo External API Test</title>
-    <style>
-      body { font-family: Arial, sans-serif; margin: 2em; }
-      .error { color: red; }
-      pre { background: #f4f4f4; padding: 1em; }
-    </style>
-</head>
-<body>
-    <h1>Odoo External API Test</h1>
-    <form method="post">
-        <button type="submit">Test Connection</button>
-    </form>
-    {% if error %}
-      <div class="error"><strong>Error:</strong> {{ error }}</div>
-    {% endif %}
-    {% if result %}
-      <h2>Connection Successful</h2>
-      <h3>Server Version</h3>
-      <pre>{{ result.version | tojson(indent=2) }}</pre>
-      <h3>User ID</h3>
-      <p>{{ result.uid }}</p>
-      <h3>Lead Records</h3>
-      <pre>{{ result.leads | tojson(indent=2) }}</pre>
-    {% endif %}
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Leads - Odoo CRM{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-medium text-gray-900">Leads</h2>
+            <form class="flex gap-4" method="get">
+                <div class="flex-1">
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Search leads..." class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md">
+                </div>
+                <div class="flex-1">
+                    <select name="stage" class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md">
+                        <option value="">All Stages</option>
+                        {% for stage in stages %}
+                        <option value="{{ stage.id }}" {% if current_stage|string == stage.id|string %}selected{% endif %}>{{ stage.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                    Filter
+                </button>
+            </form>
+        </div>
+        
+        <div class="mt-8 flex flex-col">
+            <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-300">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Name</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Contact</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Stage</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Expected Revenue</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Probability</th>
+                                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                                        <span class="sr-only">Actions</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                {% for lead in leads %}
+                                <tr>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                        {{ lead.name }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        {{ lead.contact_name }}
+                                        {% if lead.email_from %}
+                                        <br>
+                                        <span class="text-gray-400">{{ lead.email_from }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        {% for stage in stages if stage.id == lead.stage_id[0] %}
+                                            {{ stage.name }}
+                                        {% endfor %}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        ${{ "%0.2f"|format(lead.expected_revenue|float) }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        {{ "%0.0f"|format(lead.probability|float) }}%
+                                    </td>
+                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                        <a href="{{ url_for('view_lead', lead_id=lead.id) }}" class="text-primary hover:text-primary/80 mr-4">View</a>
+                                        <a href="{{ url_for('edit_lead', lead_id=lead.id) }}" class="text-primary hover:text-primary/80">Edit</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
