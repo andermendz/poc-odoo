@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Odoo External API Test</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 2em; }
+      .error { color: red; }
+      pre { background: #f4f4f4; padding: 1em; }
+    </style>
+</head>
+<body>
+    <h1>Odoo External API Test</h1>
+    <form method="post">
+        <button type="submit">Test Connection</button>
+    </form>
+    {% if error %}
+      <div class="error"><strong>Error:</strong> {{ error }}</div>
+    {% endif %}
+    {% if result %}
+      <h2>Connection Successful</h2>
+      <h3>Server Version</h3>
+      <pre>{{ result.version | tojson(indent=2) }}</pre>
+      <h3>User ID</h3>
+      <p>{{ result.uid }}</p>
+      <h3>Lead Records</h3>
+      <pre>{{ result.leads | tojson(indent=2) }}</pre>
+    {% endif %}
+</body>
+</html>
