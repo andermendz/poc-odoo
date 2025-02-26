@@ -12,9 +12,9 @@ ODOO_USERNAME = os.getenv('ODOO_USERNAME')
 ODOO_API_KEY = os.getenv('ODOO_API_KEY')
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Replace with a secure secret key in production
+app.secret_key = 'your_secret_key'  # reemplazar con una clave secreta segura en producción
 
-# Define common lead fields
+# definir campos comunes de leads
 LEAD_FIELDS = [
     'id', 'name', 'contact_name', 'partner_name', 'email_from', 'phone',
     'expected_revenue', 'probability', 'stage_id', 'user_id', 'team_id',
@@ -34,12 +34,12 @@ def index():
     try:
         uid, models = connect_to_odoo()
         
-        # Get all stages for filtering
+        # obtener todas las etapas para filtrar
         stages = models.execute_kw(ODOO_DB, uid, ODOO_API_KEY,
             'crm.stage', 'search_read',
             [[]], {'fields': ['id', 'name']})
         
-        # Handle search and filtering
+        # manejar búsqueda y filtrado
         domain = []
         search_query = request.args.get('search', '')
         if search_query:
@@ -51,11 +51,8 @@ def index():
         if stage_id and stage_id.isdigit():
             domain.append(('stage_id', '=', int(stage_id)))
         
-        # Get leads
-        leads = models.execute_kw(ODOO_DB, uid, ODOO_API_KEY,
-            'crm.lead', 'search_read',
-            [domain],
-            {'fields': LEAD_FIELDS, 'limit': 50})
+        # obtener leads
+        leads = models.execute_kw(ODOO_DB, uid, ODOO_API_KEY, 'crm.lead', 'search_read', [domain],  {'fields': LEAD_FIELDS, 'limit': 50})
         
         return render_template('index.html',
             leads=leads,
@@ -73,7 +70,7 @@ def new_lead():
         try:
             uid, models = connect_to_odoo()
             
-            # Create new lead
+            # crear nuevo lead
             lead_data = {
                 'name': request.form['name'],
                 'contact_name': request.form['contact_name'],
@@ -103,7 +100,7 @@ def view_lead(lead_id):
     try:
         uid, models = connect_to_odoo()
         
-        # Get lead details
+        # obtener detalles del lead
         leads = models.execute_kw(ODOO_DB, uid, ODOO_API_KEY,
             'crm.lead', 'read',
             [lead_id],
@@ -125,7 +122,7 @@ def edit_lead(lead_id):
         uid, models = connect_to_odoo()
         
         if request.method == 'POST':
-            # Update lead
+            # actualizar lead
             lead_data = {
                 'name': request.form['name'],
                 'contact_name': request.form['contact_name'],
@@ -144,7 +141,7 @@ def edit_lead(lead_id):
             flash('Lead updated successfully!', 'success')
             return redirect(url_for('view_lead', lead_id=lead_id))
         
-        # Get lead details for form
+        # obtener detalles del lead para el formulario
         leads = models.execute_kw(ODOO_DB, uid, ODOO_API_KEY,
             'crm.lead', 'read',
             [lead_id],
@@ -165,7 +162,7 @@ def delete_lead(lead_id):
     try:
         uid, models = connect_to_odoo()
         
-        # Delete lead
+        # eliminar lead
         models.execute_kw(ODOO_DB, uid, ODOO_API_KEY,
             'crm.lead', 'unlink',
             [[lead_id]])
